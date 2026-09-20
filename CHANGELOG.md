@@ -4,7 +4,9 @@ Versioning follows [SemVer](https://semver.org) while in `0.x` (anything may cha
 version lives in `src/com/waze/wazetripper/Version.java` and is shown in the app's panel and in the
 header of exported trip logs.
 
-## Unreleased
+## 0.4.2 — 2026-09-20
+
+First public release.
 
 Added
 - `scripts/framecheck.sh` + `src/test/…/PacketsCheck.java`: an off-bike test of the exact bytes of every packet the app
@@ -13,15 +15,11 @@ Added
   time-dependent packets can be checked deterministically (behavior is unchanged).
 
 Changed
-- README and `docs/DEVELOPMENT.md` reorganized (table of contents, Security, Background, Install, Usage, Disclaimer,
-  License; the build mechanism step by step).
-
-## 0.4.2 — 2026-09-20
-
-Changed
 - Leaving the compass or a route no longer sends the `0x1C` screen (the Tripper draws the recalculating icon for ~5 s
   and drops the link anyway); only keepalives are sent. The Tripper closes the link by itself after ~5 s and comes back
   on its clock through the automatic reconnection, which now waits 1 s (instead of 5 s) after a drop started by the Tripper.
+- README and `docs/DEVELOPMENT.md` reorganized (table of contents, Security, Background, Install, Usage, Disclaimer,
+  License; the build mechanism step by step).
 
 ## 0.4.1 — 2026-09-20
 
