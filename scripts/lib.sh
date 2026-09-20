@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared config + Docker helpers for every script in this repo. (Derivado do wazeology, Apache-2.0 — ver NOTICE.md)
+# Shared config + Docker helpers for every script in this repo. (Derivado do wazeology, Apache-2.0; ver NOTICE.md)
 # Host rule: NO tool ever runs on the host. Everything goes through run_tools() (the toolchain image).
 set -euo pipefail
 

@@ -4,7 +4,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 /**
- * TripperProtocol — montagem de pacotes de 20 bytes do protocolo BLE do Tripper Pod (Royal
+ * TripperProtocol: montagem de pacotes de 20 bytes do protocolo BLE do Tripper Pod (Royal
  * Enfield Meteor 350). Porta direta, em Java puro (sem Kotlin, seguindo a
  * convenção do wazeology). Cobre CRC, pacotes fixos de handshake, PIN, SET_TIME, bússola, o
  * pacote de navegação e a tradução das manobras do Waze. Formato e tabelas: docs/PROTOCOL.md.
@@ -175,7 +175,7 @@ final class TripperProtocol {
     }
 
     /**
-     * Pacote de navegação (CMD_NAVIGATE). next é o byte [7]. bottomInfo é [b11, b12, b13] — use {0xFF,0xFF,0xFF}
+     * Pacote de navegação (CMD_NAVIGATE). next é o byte [7]. bottomInfo é [b11, b12, b13]; use {0xFF,0xFF,0xFF}
      * quando não há informação de baixo de tela ainda (sentinela).
      */
     static byte[] buildNavPacket(int maneuver, int distanceM, int next, int nextDistanceM, int[] bottomInfo, int byte6) {
@@ -327,7 +327,7 @@ final class TripperProtocol {
         }
     }
 
-    /** Byte de manobra "seguir em frente" — confirmado (KNOWN + catálogo + produção). */
+    /** Byte de manobra "seguir em frente": confirmado (KNOWN + catálogo + produção). */
     static final int MANEUVER_STRAIGHT = 0x09;
 
     /** Icone GRANDE de "rota iniciada" (byte [2]); mostrado ~2 s ao comecar a navegacao. */

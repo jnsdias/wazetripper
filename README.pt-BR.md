@@ -3,7 +3,7 @@
 [English](README.md) · **Português (Brasil)**
 
 Modifica o app Waze para Android para que ele controle um **Tripper Pod da Royal Enfield** (o display de navegação da
-Meteor 350) por Bluetooth Low Energy — sem app intermediário e sem ler notificações do Google Maps. As manobras, a
+Meteor 350) por Bluetooth Low Energy, sem app intermediário e sem ler notificações do Google Maps. As manobras, a
 *próxima* manobra, as distâncias, o ETA e os alertas de radar vêm direto do motor de navegação do próprio Waze.
 
 > **Qual Tripper?** A Royal Enfield tem dois produtos com "Tripper" no nome: o **Tripper Pod** (o display compacto de
@@ -46,8 +46,8 @@ aqui pode isentá-lo. Use por sua conta e risco.
 É um projeto de hobby, experimental e não oficial, para os seus próprios aparelhos, publicado para estudo. Você traz a
 sua cópia do Waze e o seu hardware. O Waze é decompilado, alguns hooks em smali são injetados (inicialização e
 callbacks de navegação), um pequeno pacote Java ([`src/com/waze/wazetripper/`](src/com/waze/wazetripper)) é compilado
-e enxertado, e o resultado é reassinado — tudo dentro de uma imagem Docker, sem recompilar os recursos do Waze. O lado
-Java fala o protocolo BLE do Tripper ([`docs/PROTOCOL.md`](docs/PROTOCOL.md), em inglês).
+e enxertado, e o resultado é reassinado. Tudo isso acontece dentro de uma imagem Docker, sem recompilar os recursos do
+Waze. O lado Java fala o protocolo BLE do Tripper ([`docs/PROTOCOL.md`](docs/PROTOCOL.md), em inglês).
 
 O protocolo do Tripper foi levantado de forma independente, observando um Tripper de verdade e analisando, para
 interoperabilidade, apps existentes do Tripper. Só uma configuração está confirmada até agora (abaixo); outras motos,
@@ -70,7 +70,7 @@ celulares e versões do Waze não foram testados.
 - Pareamento com o PIN do Tripper e reconexão ao Tripper conhecido (automática ao abrir o Waze e após queda do link,
   por até 30 minutos; pode ser desligada).
 - Navegação: manobra atual, **próxima manobra** (seta pequena), distância, saída de rotatória e uma linha inferior à
-  sua escolha — distância total, tempo restante ou hora de chegada (12h/24h).
+  sua escolha: distância total, tempo restante ou hora de chegada (12h/24h).
 - Alertas de radar (câmeras, velocidade média, zonas de fiscalização) exibidos no Tripper a até 300 m, com opção para
   desligar ou escolher a codificação.
 - Dia/noite segue o tema do Waze. Telas de rota iniciada e de recalculando, ícone de ligação enquanto o celular toca e
@@ -97,8 +97,8 @@ ferramenta Android roda dentro de uma imagem fixada.
 - **Docker**, em uma máquina que o rode (Linux, macOS ou Windows + WSL2).
 - Um celular Android para instalar o APK montado, e o `adb` (ou um gerenciador de arquivos).
 - Conexão de rede na primeira montagem: o `scripts/fetch-apk.sh` baixa o Waze **5.23.0.2** com o
-  [apkeep](https://github.com/EFForg/apkeep) (APKPure por padrão; Google Play, com conta, também é suportado — veja
-  `.env.example`). O APK nunca é versionado.
+  [apkeep](https://github.com/EFForg/apkeep) (APKPure por padrão, ou Google Play, com conta; veja `.env.example`).
+  O APK nunca é versionado.
 
 ```bash
 cp .env.example .env        # opcional; os padrões servem
@@ -128,7 +128,8 @@ Waze e ele não conectou, desligue e ligue a ignição de novo com o Waze aberto
 ### Logs de trajeto
 
 Enquanto o Waze navega, o WazeTripper grava um log daquele trajeto no armazenamento privado do app (os últimos 30
-trajetos ou ~10 MB). No painel, **Exportar** salva em `Downloads/WazeTripper/` e abre o compartilhamento do Android.
+trajetos ou cerca de 10 MB). No painel, **Exportar** salva em `Downloads/WazeTripper/` e abre o compartilhamento do
+Android.
 
 **O que vai no arquivo:** horários; os nomes das manobras do Waze e os bytes enviados ao Tripper; distâncias, ETA e
 eventos de radar; eventos da conexão Bluetooth (que podem incluir o endereço Bluetooth do seu Tripper); as versões do
@@ -137,7 +138,7 @@ de enviá-lo a alguém.
 
 ### Ajudando a testar
 
-Testar exige o seu próprio APK (veja [Instalação](#instalação)) — por favor, não compartilhe APKs montados. Depois de
+Testar exige o seu próprio APK (veja [Instalação](#instalação)). Por favor, não compartilhe APKs montados. Depois de
 uma viagem, exporte o log e abra uma issue com o modelo *Trip log report*, ou envie em particular ao mantenedor.
 Relatos de manobras com ícone errado ou sem ícone são os mais úteis (procure as linhas `sem traducao pro Tripper`).
 
@@ -145,9 +146,9 @@ Relatos de manobras com ícone errado ou sem ícone são os mais úteis (procure
 
 - Somente Waze 5.23.0.2; o protocolo do Tripper está só parcialmente documentado (veja as questões em aberto em
   [`docs/PROTOCOL.md`](docs/PROTOCOL.md)).
-- Voltar ao relógio nativo do Tripper (bússola desligada, rota encerrada) sem derrubar o link ainda está sendo
-  resolvido: o Tripper derruba o link 4–5 s depois de uma tela parar de ser reenviada e, depois dessa queda, ele volta
-  a anunciar na hora, então a reconexão automática o recupera alguns segundos depois (já com o relógio).
+- Voltar ao relógio nativo do Tripper (bússola desligada, rota encerrada) sem derrubar o link ainda não foi resolvido:
+  o Tripper derruba o link de 4 a 5 s depois que uma tela deixa de ser reenviada e, após essa queda, volta a anunciar
+  na hora, então a reconexão automática o recupera alguns segundos depois (já no relógio).
 - No modo de radar *Experimental*, a distância vai nos bytes `[8-9]`, uma hipótese não verificada; se o Tripper os
   ignorar, só o ícone de radar aparece. O modo *Compatível* põe a distância na linha de baixo, escondendo o total da
   rota.
@@ -156,14 +157,14 @@ Relatos de manobras com ícone errado ou sem ícone são os mais úteis (procure
 
 ## Aviso legal
 
-Sem afiliação, endosso ou ligação com Waze, Google ou Royal Enfield. "Waze", "Royal Enfield", "Tripper Pod" e "Tripper Dash" são marcas
-dos respectivos donos, citadas aqui apenas para descrever compatibilidade.
+Sem afiliação, endosso ou ligação com Waze, Google ou Royal Enfield. "Waze", "Royal Enfield", "Tripper Pod" e
+"Tripper Dash" são marcas dos respectivos donos, citadas aqui apenas para descrever compatibilidade.
 
 Este repositório não contém código, recursos nem dados do Waze ou da Royal Enfield. Ele traz uma esteira de build e um
-pequeno pacote injetado que rodam sobre a sua própria cópia, obtida legitimamente, do Waze, que o `fetch-apk.sh` baixa
-na hora de montar. Nada proprietário é redistribuído, e o APK que você montar **não deve** ser redistribuído. O
-protocolo BLE do Tripper foi levantado de forma independente, para interoperabilidade, e não vem de documentação nem
-de código da Royal Enfield.
+pequeno pacote injetado que rodam sobre a sua própria cópia do Waze, obtida de forma legítima e baixada pelo
+`fetch-apk.sh` na hora de montar. Nada proprietário é redistribuído, e o APK que você montar **não deve** ser
+redistribuído. O protocolo BLE do Tripper foi levantado de forma independente, para interoperabilidade, e não vem de
+documentação nem de código da Royal Enfield.
 
 ## Licença
 

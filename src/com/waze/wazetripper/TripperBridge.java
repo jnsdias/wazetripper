@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.UUID;
 
 /**
- * TripperBridge — ponte BLE
+ * TripperBridge: ponte BLE
  * process-wide dentro do Waze patchado, adaptada de um cliente BLE anterior do
  * autor (validado em hardware real) e seguindo o mesmo desenho de singleton sem Service do
  * ClusterBridge do wazeology (nenhum Foreground Service - o link vive enquanto o processo do
