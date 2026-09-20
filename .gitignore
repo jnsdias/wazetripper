@@ -1,27 +1,28 @@
-# APKs NUNCA vão pro git (o APK do WazeTripper é o Waze do Google modificado: não redistribuir).
-# Baixe o Waze com scripts/fetch-apk.sh e monte o seu com scripts/all.sh.
+# NEVER commit APKs: the built APK is Google's Waze, modified, and must not be redistributed.
+# Fetch Waze with scripts/fetch-apk.sh and build your own with scripts/all.sh.
 *.apk
 *.xapk
 *.apkm
 
-# Material de assinatura descartável, gerado localmente
+# Signing material, generated locally
 *.keystore
 *.jks
 *.idsig
 
-# Saída de decompile/build
+# Download / decompile / build output
 /apk/
 /build/
 *.dex
 *.class
 
+# Local configuration (may hold Google Play credentials)
+.env
+
+# Tool and OS leftovers
 __pycache__/
 *.pyc
-.env
 .DS_Store
 *.swp
 
-# Arquivos de sessão/ferramentas de IA e locais
-CLAUDE.md
-.claude/
+# Logs (exported trip logs can contain personal data)
 *.log
