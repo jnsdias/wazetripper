@@ -4,6 +4,14 @@ Versioning follows [SemVer](https://semver.org) while in `0.x` (anything may cha
 version lives in `src/com/waze/wazetripper/Version.java` and is shown in the app's panel and in the
 header of exported trip logs.
 
+## 0.5.0 — 2026-09-20
+
+Changed
+- The floating button is now the Tripper's bezel with a Wi-Fi symbol that is red (disconnected), orange (connecting) or
+  green (connected); the panel header uses the same icon.
+- The panel follows the language set inside Waze (Portuguese, Spanish, or English for any other language), falling back
+  to the system language. Diagnostic logs stay in Portuguese.
+
 ## 0.4.2 — 2026-09-20
 
 First public release.
