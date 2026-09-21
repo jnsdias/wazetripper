@@ -148,6 +148,7 @@ final class TripperPanel {
         root.addView(sectionTitle(tr("LOG DE TRAJETOS", "TRIP LOG", "REGISTRO DE VIAJES")), topMargin(20));
         root.addView(buildTripLogCard(), topMargin(8));
         root.addView(buildLogSection(), topMargin(12));
+        root.addView(buildAbout(), topMargin(4));
 
         ScrollView scroll = new ScrollView(activity);
         scroll.addView(root);
@@ -662,6 +663,27 @@ final class TripperPanel {
             logToggle.setText((open ? "\u25be " : "\u25b8 ") + tr("Detalhes", "Details", "Detalles"));
         });
         return box;
+    }
+
+    /** Rodape: autoria e link do projeto (abre no navegador). */
+    private View buildAbout() {
+        TextView t = new TextView(activity);
+        t.setText(tr("Projeto independente por Jonas \u00b7 github.com/jnsdias/wazetripper",
+                "Independent project by Jonas \u00b7 github.com/jnsdias/wazetripper",
+                "Proyecto independiente por Jonas \u00b7 github.com/jnsdias/wazetripper"));
+        t.setTextColor(MUTED);
+        t.setTextSize(12f);
+        t.setGravity(Gravity.CENTER);
+        t.setPaintFlags(t.getPaintFlags() | android.graphics.Paint.UNDERLINE_TEXT_FLAG);
+        t.setPadding(dp(8), dp(12), dp(8), dp(4));
+        t.setOnClickListener(v -> {
+            try {
+                activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/jnsdias/wazetripper")));
+            } catch (Throwable e) {
+                TripperLog.e("WazeTripper", "nao consegui abrir o link do projeto", e);
+            }
+        });
+        return t;
     }
 
     // ---------- estado -----------------------------------------------------------------------
