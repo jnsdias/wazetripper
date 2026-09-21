@@ -100,12 +100,14 @@ Android toolchain runs inside a pinned image.
   see `.env.example`). The APK is never committed.
 
 ```bash
-cp .env.example .env        # optional; defaults are fine
 scripts/build-image.sh      # once: builds the toolchain image
 scripts/all.sh              # fetch Waze 5.23.0.2 -> decompile -> patch -> framecheck -> build
 # result: ./wazetripper.apk
 scripts/framecheck.sh       # off-bike packet byte-layout test (build.sh also runs it as a gate)
 ```
+
+No configuration file is needed. Only if you want to change the Waze version, the download source or the bundled
+languages, copy `.env.example` to `.env` first and edit it (the comments inside explain each setting).
 
 The APK is signed with a local debug key created on the first build. Because that differs from the Play Store's
 signature, **uninstall the official Waze first** (sign in again afterwards), then sideload:

@@ -103,12 +103,14 @@ ferramenta Android roda dentro de uma imagem fixada.
   O APK nunca é versionado.
 
 ```bash
-cp .env.example .env        # opcional; os padrões servem
 scripts/build-image.sh      # uma vez: cria a imagem com as ferramentas
 scripts/all.sh              # baixa o Waze 5.23.0.2 -> decompila -> patch -> framecheck -> monta
 # resultado: ./wazetripper.apk
 scripts/framecheck.sh       # teste dos bytes dos pacotes, sem hardware (o build.sh também o roda como trava)
 ```
+
+Não é preciso nenhum arquivo de configuração. Só se você quiser mudar a versão do Waze, a origem do download ou os
+idiomas incluídos, copie o `.env.example` para `.env` antes e edite (os comentários dentro explicam cada opção).
 
 O APK é assinado com uma chave de debug local, criada na primeira montagem. Como ela difere da assinatura da Play
 Store, **desinstale o Waze oficial antes** (e entre de novo na conta depois). Depois:
