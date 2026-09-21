@@ -1,10 +1,14 @@
 package com.waze.wazetripper;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
-import android.graphics.Path;
+import android.graphics.PixelFormat;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
@@ -16,12 +20,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 
 /**
- * TripperOverlay - botao flutuante sobreposto ao mapa do Waze, com o icone "celular <-> Pod"
- * num circulo que muda de cor com o estado da conexao (vermelho desconectado, verde conectado,
- * laranja em andamento); ao toque abre o TripperPanel (pareamento, status e configuracoes).
- * UI 100% programatica - nenhum layout XML, nenhum recurso novo, so android.* framework. O icone
- * tambem e' desenhado em codigo (Canvas/Path), nao como asset nem drawable, pra nao precisar
- * estender o pipeline de empacotamento (graft.py).
+ * TripperOverlay - botao flutuante sobreposto ao mapa do Waze, com o aro do Tripper e um simbolo
+ * de conexao que muda de cor com o estado (vermelho desconectado, verde conectado, laranja em
+ * andamento); ao toque abre o TripperPanel (pareamento, status e configuracoes).
+ * UI 100% programatica - nenhum layout XML, nenhum recurso novo, so android.* framework. O aro e'
+ * uma imagem embutida em base64 (TripperIconData) e o simbolo e' desenhado em codigo, nao como
+ * asset nem drawable, pra nao precisar estender o pipeline de empacotamento (graft.py).
  *
  * Chamado pelo hook em MainActivity.onCreate: TripperOverlay.attach(this). Precisa ser public
  * (classe e metodo) porque o hook injetado via smali fica em com.waze.MainActivity - pacote
@@ -77,8 +81,10 @@ public final class TripperOverlay {
             Log.e(TAG, "TripperBridge obtido: " + bridge);
 
             ImageButton button = new ImageButton(activity);
-            button.setBackground(circleBackground(stateColor(bridge.getState())));
-            button.setImageDrawable(linkIcon((int) (sizePx * 0.74f)));
+            // Fundo escuro e' so' pra a sombra (elevation) sair redonda; o icone cobre tudo.
+            StateIcon icon = new StateIcon(sizePx, stateColor(bridge.getState()));
+            button.setBackground(circleBackground(0xFF10131A));
+            button.setImageDrawable(icon);
             button.setScaleType(android.widget.ImageView.ScaleType.CENTER);
             button.setContentDescription("WazeTripper");
             button.setElevation(8f * density);
@@ -96,7 +102,7 @@ public final class TripperOverlay {
             button.setOnClickListener(v -> TripperPanel.show(activity, bridge));
             // Observador permanente (o listener do painel some quando ele fecha): o botao muda de
             // cor com o estado mesmo sem o painel aberto.
-            bridge.setStateObserver(state -> button.setBackground(circleBackground(stateColor(state))));
+            bridge.setStateObserver(state -> icon.setStateColor(stateColor(state)));
             bridge.startAutoOnce(); // procura o Pod conhecido ao abrir o Waze (no-op sem pareamento / desligado)
             Log.e(TAG, "attachNow() concluido com sucesso");
         } catch (Throwable t) {
@@ -129,75 +135,106 @@ public final class TripperOverlay {
     }
 
     /**
-     * Icone "celular <-> Pod": celular a esquerda, tres pontos de ligacao e o mostrador redondo do
-     * Pod (com seta de navegacao) a direita. Desenhado em codigo numa caixa de 100x100 unidades,
-     * escalada pro tamanho pedido; sempre branco (a cor de estado vem do circulo de fundo).
+     * Icone do botao e do cabecalho do painel: o aro do Tripper (imagem embutida em
+     * TripperIconData) com o simbolo de conexao desenhado por cima em codigo, na cor do estado
+     * (setStateColor). Fica tudo numa caixa de 100x100 unidades, escalada pro tamanho pedido.
      */
-    static Drawable linkIcon(int sizePx) {
-        return new Drawable() {
-            private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            private final Path arrow = new Path();
+    static final class StateIcon extends Drawable {
+        private static Bitmap bezel; // decodificado uma vez, compartilhado entre os icones
 
-            {
-                // seta de navegacao centrada em (77, 50), raio 11
-                arrow.moveTo(77f, 39f);
-                arrow.lineTo(85.25f, 59.9f);
-                arrow.lineTo(77f, 54.95f);
-                arrow.lineTo(68.75f, 59.9f);
-                arrow.close();
+        private final int sizePx;
+        private final Paint bitmapPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+        private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final RectF arc = new RectF();
+        private int color;
+
+        StateIcon(int sizePx, int color) {
+            this.sizePx = sizePx;
+            this.color = color;
+            loadBezel();
+        }
+
+        void setStateColor(int newColor) {
+            if (newColor != color) {
+                color = newColor;
+                invalidateSelf();
+            }
+        }
+
+        private static synchronized void loadBezel() {
+            if (bezel != null) {
+                return;
+            }
+            try {
+                byte[] png = TripperIconData.bezelPng();
+                bezel = BitmapFactory.decodeByteArray(png, 0, png.length);
+            } catch (Throwable t) {
+                Log.e(TAG, "falha ao decodificar o aro do icone; usando circulo escuro", t);
+            }
+        }
+
+        @Override
+        public void draw(Canvas canvas) {
+            Rect b = getBounds();
+            float s = Math.min(b.width(), b.height()) / 100f;
+            if (bezel != null) {
+                canvas.drawBitmap(bezel, null, b, bitmapPaint);
+            } else {
+                paint.setStyle(Paint.Style.FILL);
+                paint.setColor(0xFF10131A);
+                canvas.drawCircle(b.exactCenterX(), b.exactCenterY(), 50f * s, paint);
             }
 
-            @Override
-            public void draw(Canvas canvas) {
-                android.graphics.Rect b = getBounds();
-                float s = Math.min(b.width(), b.height()) / 100f;
-                canvas.save();
-                canvas.translate(b.left, b.top);
-                canvas.scale(s, s);
+            canvas.save();
+            canvas.translate(b.left, b.top);
+            canvas.scale(s, s);
+            paint.setStrokeCap(Paint.Cap.ROUND);
 
-                paint.setColor(Color.WHITE);
-                paint.setStrokeCap(Paint.Cap.ROUND);
-                paint.setStrokeJoin(Paint.Join.ROUND);
-                paint.setStrokeWidth(6.5f);
+            // Brilho (traco mais largo e translucido) e depois o simbolo, em duas passadas.
+            int glow = (color & 0x00FFFFFF) | 0x55000000;
+            for (int pass = 0; pass < 2; pass++) {
+                float extra = pass == 0 ? 5f : 0f;
+                paint.setColor(pass == 0 ? glow : color);
 
                 paint.setStyle(Paint.Style.STROKE);
-                canvas.drawRoundRect(7f, 22f, 31f, 78f, 8f, 8f, paint); // celular
-                canvas.drawCircle(77f, 50f, 19f, paint);                // mostrador do Pod
+                paint.setStrokeWidth(4.2f + extra);
+                for (float r = 9f; r <= 24f; r += 7.5f) {
+                    arc.set(50f - r, 60f - r, 50f + r, 60f + r);
+                    canvas.drawArc(arc, 225f, 90f, false, paint); // arco de 90 graus pra cima
+                }
 
                 paint.setStyle(Paint.Style.FILL);
-                canvas.drawCircle(19f, 68f, 3f, paint);                 // botao do celular
-                for (int x = 38; x <= 50; x += 6) {
-                    canvas.drawCircle(x, 50f, 3f, paint);               // pontos de ligacao
-                }
-                canvas.drawPath(arrow, paint);
-
-                canvas.restore();
+                canvas.drawCircle(50f, 60f, 3.6f + extra / 2f, paint);
             }
 
-            @Override
-            public void setAlpha(int alpha) {
-                paint.setAlpha(alpha);
-            }
+            canvas.restore();
+        }
 
-            @Override
-            public void setColorFilter(android.graphics.ColorFilter colorFilter) {
-                paint.setColorFilter(colorFilter);
-            }
+        @Override
+        public void setAlpha(int alpha) {
+            bitmapPaint.setAlpha(alpha);
+            paint.setAlpha(alpha);
+        }
 
-            @Override
-            public int getOpacity() {
-                return android.graphics.PixelFormat.TRANSLUCENT;
-            }
+        @Override
+        public void setColorFilter(ColorFilter colorFilter) {
+            bitmapPaint.setColorFilter(colorFilter);
+            paint.setColorFilter(colorFilter);
+        }
 
-            @Override
-            public int getIntrinsicWidth() {
-                return sizePx;
-            }
+        @Override
+        public int getOpacity() {
+            return PixelFormat.TRANSLUCENT;
+        }
 
-            @Override
-            public int getIntrinsicHeight() {
-                return sizePx;
-            }
-        };
+        @Override
+        public int getIntrinsicWidth() {
+            return sizePx;
+        }
+
+        @Override
+        public int getIntrinsicHeight() {
+            return sizePx;
+        }
     }
 }

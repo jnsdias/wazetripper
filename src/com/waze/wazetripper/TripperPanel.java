@@ -65,7 +65,17 @@ final class TripperPanel {
 
     private static final int MAX_LOG_LINES = 8;
     private static final int PAIRING_STEPS = 3;
-    private static final String COMPASS_HINT = "Seta de rumo (GPS) quando não há rota";
+
+    /** Texto de idioma atual: portugues, ingles, espanhol (ver TripperText). */
+    private static String tr(String pt, String en, String es) {
+        return TripperText.tr(pt, en, es);
+    }
+
+    private static String compassHint() {
+        return tr("Seta de rumo (GPS) quando n\u00e3o h\u00e1 rota",
+                "Heading arrow (GPS) when there is no route",
+                "Flecha de rumbo (GPS) cuando no hay ruta");
+    }
 
     static void show(Activity activity, TripperBridge bridge) {
         new TripperPanel(activity, bridge).open();
@@ -80,6 +90,7 @@ final class TripperPanel {
 
     // cabecalho / cartao do dispositivo
     private ImageView headerIcon;
+    private TripperOverlay.StateIcon headerStateIcon;
     private TextView chip;
     private TextView deviceName;
     private TextView deviceSub;
@@ -117,6 +128,7 @@ final class TripperPanel {
     // ---------- montagem ---------------------------------------------------------------------
 
     private void open() {
+        TripperText.refresh(); // segue o idioma que o Waze esta usando agora
         dialog = new Dialog(activity);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -131,9 +143,9 @@ final class TripperPanel {
 
         root.addView(buildHeader());
         root.addView(buildDeviceCard(), topMargin(16));
-        root.addView(sectionTitle("CONFIGURAÇÕES"), topMargin(20));
+        root.addView(sectionTitle(tr("CONFIGURA\u00c7\u00d5ES", "SETTINGS", "AJUSTES")), topMargin(20));
         root.addView(buildSettingsCard(), topMargin(8));
-        root.addView(sectionTitle("LOG DE TRAJETOS"), topMargin(20));
+        root.addView(sectionTitle(tr("LOG DE TRAJETOS", "TRIP LOG", "REGISTRO DE VIAJES")), topMargin(20));
         root.addView(buildTripLogCard(), topMargin(8));
         root.addView(buildLogSection(), topMargin(12));
 
@@ -182,7 +194,8 @@ final class TripperPanel {
 
         int iconBox = dp(40);
         headerIcon = new ImageView(activity);
-        headerIcon.setImageDrawable(TripperOverlay.linkIcon((int) (iconBox * 0.74f)));
+        headerStateIcon = new TripperOverlay.StateIcon(iconBox, TripperOverlay.stateColor(bridge.getState()));
+        headerIcon.setImageDrawable(headerStateIcon);
         headerIcon.setScaleType(ImageView.ScaleType.CENTER);
         row.addView(headerIcon, new LinearLayout.LayoutParams(iconBox, iconBox));
 
@@ -257,7 +270,7 @@ final class TripperPanel {
         pinRow.setGravity(Gravity.CENTER_VERTICAL);
         pinField = new EditText(activity);
         pinField.setInputType(InputType.TYPE_CLASS_NUMBER);
-        pinField.setHint("PIN mostrado no Tripper");
+        pinField.setHint(tr("PIN mostrado no Tripper", "PIN shown on the Tripper", "PIN que muestra el Tripper"));
         pinField.setHintTextColor(MUTED);
         pinField.setTextColor(TEXT);
         pinField.setTextSize(16f);
@@ -266,7 +279,7 @@ final class TripperPanel {
         pinField.setBackground(rounded(BG, 12));
         pinRow.addView(pinField, new LinearLayout.LayoutParams(0, dp(48), 1f));
         Button confirm = new Button(activity);
-        confirm.setText("Confirmar");
+        confirm.setText(tr("Confirmar", "Confirm", "Confirmar"));
         styleButton(confirm, true);
         confirm.setOnClickListener(v -> bridge.confirmPin(pinField.getText().toString().trim()));
         LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(48));
@@ -279,7 +292,7 @@ final class TripperPanel {
         card.addView(primary, buttonParams(14));
 
         forgetLink = new TextView(activity);
-        forgetLink.setText("Esquecer / trocar Tripper");
+        forgetLink.setText(tr("Esquecer / trocar Tripper", "Forget / replace Tripper", "Olvidar / cambiar Tripper"));
         forgetLink.setTextColor(DANGER);
         forgetLink.setTextSize(13f);
         forgetLink.setGravity(Gravity.CENTER);
@@ -299,7 +312,8 @@ final class TripperPanel {
         LinearLayout clockRow = new LinearLayout(activity);
         clockRow.setOrientation(LinearLayout.HORIZONTAL);
         clockRow.setGravity(Gravity.CENTER_VERTICAL);
-        clockRow.addView(labelColumn("Formato de hora", "Relógio do Tripper"),
+        clockRow.addView(labelColumn(tr("Formato de hora", "Time format", "Formato de hora"),
+                        tr("Rel\u00f3gio do Tripper", "Tripper clock", "Reloj del Tripper")),
                 new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         LinearLayout segmented = new LinearLayout(activity);
         segmented.setOrientation(LinearLayout.HORIZONTAL);
@@ -318,15 +332,17 @@ final class TripperPanel {
         LinearLayout syncRow = new LinearLayout(activity);
         syncRow.setOrientation(LinearLayout.HORIZONTAL);
         syncRow.setGravity(Gravity.CENTER_VERTICAL);
-        LinearLayout syncLabel = labelColumn("Sincronizar relógio", "");
+        LinearLayout syncLabel = labelColumn(tr("Sincronizar rel\u00f3gio", "Sync clock", "Sincronizar reloj"), "");
         syncSub = (TextView) syncLabel.getChildAt(1);
         syncRow.addView(syncLabel, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         syncButton = new Button(activity);
-        syncButton.setText("Sincronizar");
+        syncButton.setText(tr("Sincronizar", "Sync", "Sincronizar"));
         styleButton(syncButton, true);
         syncButton.setOnClickListener(v -> {
             boolean sent = bridge.syncClockNow();
-            syncSub.setText(sent ? "Hora enviada ao Tripper." : "Sem conexão com o Tripper.");
+            syncSub.setText(sent
+                    ? tr("Hora enviada ao Tripper.", "Time sent to the Tripper.", "Hora enviada al Tripper.")
+                    : tr("Sem conex\u00e3o com o Tripper.", "Not connected to the Tripper.", "Sin conexi\u00f3n con el Tripper."));
             syncSub.postDelayed(this::renderSyncHint, 2500);
         });
         syncRow.addView(syncButton, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
@@ -338,7 +354,7 @@ final class TripperPanel {
         LinearLayout compassRow = new LinearLayout(activity);
         compassRow.setOrientation(LinearLayout.HORIZONTAL);
         compassRow.setGravity(Gravity.CENTER_VERTICAL);
-        LinearLayout compassLabel = labelColumn("Bússola sem rota", COMPASS_HINT);
+        LinearLayout compassLabel = labelColumn(tr("B\u00fassola sem rota", "Compass without route", "Br\u00fajula sin ruta"), compassHint());
         compassSub = (TextView) compassLabel.getChildAt(1);
         compassRow.addView(compassLabel, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         Switch compassSwitch = new Switch(activity);
@@ -351,7 +367,9 @@ final class TripperPanel {
             bridge.refreshMode(); // ligar/desligar a bussola e' decidido (e o reconnect, se preciso) no bridge
             boolean noPermission = checked && activity.checkSelfPermission(
                     android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED;
-            compassSub.setText(noPermission ? "Sem permissão de localização no Waze" : COMPASS_HINT);
+            compassSub.setText(noPermission
+                    ? tr("Sem permiss\u00e3o de localiza\u00e7\u00e3o no Waze", "Waze has no location permission", "Waze no tiene permiso de ubicaci\u00f3n")
+                    : compassHint());
             compassSub.setTextColor(noPermission ? WARN : MUTED);
         });
         compassRow.addView(compassSwitch);
@@ -363,8 +381,10 @@ final class TripperPanel {
         LinearLayout autoRow = new LinearLayout(activity);
         autoRow.setOrientation(LinearLayout.HORIZONTAL);
         autoRow.setGravity(Gravity.CENTER_VERTICAL);
-        autoRow.addView(labelColumn("Reconex\u00e3o autom\u00e1tica",
-                        "Procura o Tripper ao abrir o Waze e ap\u00f3s quedas (at\u00e9 30 min)"),
+        autoRow.addView(labelColumn(tr("Reconex\u00e3o autom\u00e1tica", "Automatic reconnection", "Reconexi\u00f3n autom\u00e1tica"),
+                        tr("Procura o Tripper ao abrir o Waze e ap\u00f3s quedas (at\u00e9 30 min)",
+                                "Looks for the Tripper when Waze opens and after drops (up to 30 min)",
+                                "Busca el Tripper al abrir Waze y tras cortes (hasta 30 min)")),
                 new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         Switch autoSwitch = new Switch(activity);
         autoSwitch.setChecked(TripperPrefs.isAutoReconnect(activity));
@@ -380,8 +400,11 @@ final class TripperPanel {
         addDivider(card);
 
         // O que aparece na parte de baixo da tela de navegacao (Fase 2c).
-        card.addView(labelColumn("Informa\u00e7\u00e3o inferior", "Parte de baixo da tela de navega\u00e7\u00e3o"), topMargin(12));
-        card.addView(choiceRow(new String[]{"Dist\u00e2ncia", "Tempo", "Chegada"},
+        card.addView(labelColumn(tr("Informa\u00e7\u00e3o inferior", "Bottom info", "Informaci\u00f3n inferior"),
+                tr("Parte de baixo da tela de navega\u00e7\u00e3o", "Bottom of the navigation screen",
+                        "Parte inferior de la pantalla de navegaci\u00f3n")), topMargin(12));
+        card.addView(choiceRow(new String[]{tr("Dist\u00e2ncia", "Distance", "Distancia"),
+                        tr("Tempo", "Time", "Tiempo"), tr("Chegada", "Arrival", "Llegada")},
                 TripperPrefs.bottomInfoMode(activity),
                 mode -> TripperPrefs.setBottomInfoMode(activity, mode)), topMargin(8));
 
@@ -389,14 +412,21 @@ final class TripperPanel {
 
         // Radar no Pod: so' aparece a ate 300 m. Compativel = 0x3C + distancia na linha de baixo (como o
         // outro app do Tripper); Experimental = 0x3C + distancia no campo menor, sem tocar na linha de baixo.
-        card.addView(labelColumn("Radar no Tripper", "S\u00f3 a at\u00e9 300 m \u00b7 Experimental mant\u00e9m o total na linha de baixo"), topMargin(12));
-        card.addView(choiceRow(new String[]{"Desligado", "Compat\u00edvel", "Experimental"},
+        card.addView(labelColumn(tr("Radar no Tripper", "Radar on the Tripper", "Radar en el Tripper"),
+                tr("S\u00f3 a at\u00e9 300 m \u00b7 Experimental mant\u00e9m o total na linha de baixo",
+                        "Only within 300 m \u00b7 Experimental keeps the total on the bottom line",
+                        "Solo a menos de 300 m \u00b7 Experimental mantiene el total en la l\u00ednea inferior")), topMargin(12));
+        card.addView(choiceRow(new String[]{tr("Desligado", "Off", "Apagado"),
+                        tr("Compat\u00edvel", "Compatible", "Compatible"), "Experimental"},
                 TripperPrefs.radarMode(activity),
                 mode -> TripperPrefs.setRadarMode(activity, mode)), topMargin(8));
 
         addDivider(card);
 
-        card.addView(switchRow("\u00cdcone de liga\u00e7\u00e3o", "Mostra no Tripper quando o celular toca ou est\u00e1 em chamada",
+        card.addView(switchRow(tr("\u00cdcone de liga\u00e7\u00e3o", "Call icon", "Icono de llamada"),
+                tr("Mostra no Tripper quando o celular toca ou est\u00e1 em chamada",
+                        "Shows on the Tripper when the phone rings or is on a call",
+                        "Se muestra en el Tripper cuando el tel\u00e9fono suena o est\u00e1 en llamada"),
                 TripperPrefs.isCallIcon(activity), (b, checked) -> {
                     TripperPrefs.setCallIcon(activity, checked);
                     bridge.onCallPrefChanged();
@@ -404,7 +434,10 @@ final class TripperPanel {
 
         addDivider(card);
 
-        card.addView(switchRow("Intensidade por dist\u00e2ncia", "Destaca o \u00edcone conforme a manobra se aproxima",
+        card.addView(switchRow(tr("Intensidade por dist\u00e2ncia", "Distance-based intensity", "Intensidad por distancia"),
+                tr("Destaca o \u00edcone conforme a manobra se aproxima",
+                        "Highlights the icon as the maneuver gets closer",
+                        "Resalta el icono a medida que se acerca la maniobra"),
                 TripperPrefs.isDistanceIntensity(activity),
                 (b, checked) -> TripperPrefs.setDistanceIntensity(activity, checked)), topMargin(12));
 
@@ -414,11 +447,14 @@ final class TripperPanel {
         LinearLayout nightRow = new LinearLayout(activity);
         nightRow.setOrientation(LinearLayout.HORIZONTAL);
         nightRow.setGravity(Gravity.CENTER_VERTICAL);
-        nightRow.addView(labelColumn("Modo noturno", "Segue o tema do Waze (bússola e navegação)"),
+        nightRow.addView(labelColumn(tr("Modo noturno", "Night mode", "Modo nocturno"),
+                        tr("Segue o tema do Waze (b\u00fassola e navega\u00e7\u00e3o)",
+                                "Follows Waze's theme (compass and navigation)",
+                                "Sigue el tema de Waze (br\u00fajula y navegaci\u00f3n)")),
                 new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         boolean night = TripperNight.isNight();
         TextView nightState = new TextView(activity);
-        nightState.setText(night ? "Noite" : "Dia");
+        nightState.setText(night ? tr("Noite", "Night", "Noche") : tr("Dia", "Day", "D\u00eda"));
         nightState.setTextColor(night ? ACCENT : WARN);
         nightState.setTextSize(14f);
         nightState.setTypeface(Typeface.DEFAULT_BOLD);
@@ -435,18 +471,18 @@ final class TripperPanel {
         LinearLayout row = new LinearLayout(activity);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        LinearLayout label = labelColumn("Log de trajetos", "");
+        LinearLayout label = labelColumn(tr("Log de trajetos", "Trip log", "Registro de viajes"), "");
         tripSub = (TextView) label.getChildAt(1);
         row.addView(label, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         tripExport = new Button(activity);
-        tripExport.setText("Exportar");
+        tripExport.setText(tr("Exportar", "Export", "Exportar"));
         styleButton(tripExport, true);
         tripExport.setOnClickListener(v -> exportTripLog());
         row.addView(tripExport, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, dp(40)));
         card.addView(row);
 
         tripClear = new TextView(activity);
-        tripClear.setText("Limpar registros");
+        tripClear.setText(tr("Limpar registros", "Clear records", "Borrar registros"));
         tripClear.setTextColor(DANGER);
         tripClear.setTextSize(13f);
         tripClear.setGravity(Gravity.CENTER);
@@ -454,16 +490,16 @@ final class TripperPanel {
         tripClear.setOnClickListener(v -> {
             if (!clearArmed) { // apagar e' definitivo: pede um segundo toque
                 clearArmed = true;
-                tripClear.setText("Toque de novo para apagar");
+                tripClear.setText(tr("Toque de novo para apagar", "Tap again to delete", "Toca de nuevo para borrar"));
                 tripClear.postDelayed(() -> {
                     clearArmed = false;
-                    tripClear.setText("Limpar registros");
+                    tripClear.setText(tr("Limpar registros", "Clear records", "Borrar registros"));
                 }, 3000);
                 return;
             }
             clearArmed = false;
             TripperLog.clear();
-            tripClear.setText("Limpar registros");
+            tripClear.setText(tr("Limpar registros", "Clear records", "Borrar registros"));
             renderTripLog();
         });
         card.addView(tripClear);
@@ -475,11 +511,13 @@ final class TripperPanel {
         long[] st = TripperLog.stats();
         boolean rec = TripperLog.isRecording();
         if (rec) {
-            tripSub.setText("Gravando o trajeto agora");
+            tripSub.setText(tr("Gravando o trajeto agora", "Recording the trip now", "Grabando el viaje ahora"));
         } else if (st[0] == 0) {
-            tripSub.setText("Grava sozinho durante a navega\u00e7\u00e3o");
+            tripSub.setText(tr("Grava sozinho durante a navega\u00e7\u00e3o", "Records by itself during navigation", "Graba solo durante la navegaci\u00f3n"));
         } else {
-            tripSub.setText(st[0] + (st[0] == 1 ? " trajeto" : " trajetos") + " \u00b7 " + formatSize(st[1]));
+            boolean one = st[0] == 1;
+            tripSub.setText(st[0] + " " + (one ? tr("trajeto", "trip", "viaje") : tr("trajetos", "trips", "viajes"))
+                    + " \u00b7 " + formatSize(st[1]));
         }
         tripSub.setTextColor(rec ? OK : MUTED);
         tripExport.setEnabled(st[0] > 0);
@@ -495,7 +533,7 @@ final class TripperPanel {
     /** Salva todos os trajetos em Downloads/WazeTripper (MediaStore, sem permissao) e abre o compartilhamento. */
     private void exportTripLog() {
         tripExport.setEnabled(false);
-        tripSub.setText("Exportando\u2026");
+        tripSub.setText(tr("Exportando\u2026", "Exporting\u2026", "Exportando\u2026"));
         final String name = "wazetripper-log-" + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(new Date()) + ".txt";
         new Thread(() -> {
             Uri saved = null;
@@ -511,7 +549,7 @@ final class TripperPanel {
             activity.runOnUiThread(() -> {
                 renderTripLog();
                 if (uri != null) shareTripLog(uri, name);
-                else Toast.makeText(activity, "Falha ao exportar: " + err, Toast.LENGTH_LONG).show();
+                else Toast.makeText(activity, tr("Falha ao exportar: ", "Export failed: ", "Error al exportar: ") + err, Toast.LENGTH_LONG).show();
             });
         }, "wazetripper-export").start();
     }
@@ -524,10 +562,10 @@ final class TripperPanel {
         v.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/WazeTripper");
         v.put(MediaStore.MediaColumns.IS_PENDING, 1);
         Uri uri = cr.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, v);
-        if (uri == null) throw new IOException("o Android recusou criar o arquivo em Downloads");
+        if (uri == null) throw new IOException(tr("o Android recusou criar o arquivo em Downloads", "Android refused to create the file in Downloads", "Android rechaz\u00f3 crear el archivo en Descargas"));
         try {
             try (OutputStream out = cr.openOutputStream(uri)) {
-                if (out == null) throw new IOException("nao consegui abrir o arquivo em Downloads");
+                if (out == null) throw new IOException(tr("n\u00e3o consegui abrir o arquivo em Downloads", "could not open the file in Downloads", "no pude abrir el archivo en Descargas"));
                 TripperLog.exportTo(out);
             }
             ContentValues done = new ContentValues();
@@ -546,12 +584,12 @@ final class TripperPanel {
     private void shareTripLog(Uri uri, String name) {
         Intent send = new Intent(Intent.ACTION_SEND);
         send.setType("text/plain");
-        send.putExtra(Intent.EXTRA_SUBJECT, "Log do WazeTripper");
+        send.putExtra(Intent.EXTRA_SUBJECT, tr("Log do WazeTripper", "WazeTripper log", "Registro de WazeTripper"));
         send.putExtra(Intent.EXTRA_STREAM, uri);
         send.setClipData(ClipData.newRawUri(name, uri));
         send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        Toast.makeText(activity, "Salvo em Downloads/WazeTripper", Toast.LENGTH_LONG).show();
-        activity.startActivity(Intent.createChooser(send, "Enviar log"));
+        Toast.makeText(activity, tr("Salvo em Downloads/WazeTripper", "Saved in Downloads/WazeTripper", "Guardado en Downloads/WazeTripper"), Toast.LENGTH_LONG).show();
+        activity.startActivity(Intent.createChooser(send, tr("Enviar log", "Send log", "Enviar registro")));
     }
 
     /** Linha com titulo, texto de apoio e um interruptor. */
@@ -602,7 +640,7 @@ final class TripperPanel {
         box.setOrientation(LinearLayout.VERTICAL);
 
         logToggle = new TextView(activity);
-        logToggle.setText("▸ Detalhes");
+        logToggle.setText("\u25b8 " + tr("Detalhes", "Details", "Detalles"));
         logToggle.setTextColor(MUTED);
         logToggle.setTextSize(13f);
         logToggle.setPadding(dp(4), dp(8), dp(4), dp(8));
@@ -621,7 +659,7 @@ final class TripperPanel {
         logToggle.setOnClickListener(v -> {
             boolean open = logView.getVisibility() != View.VISIBLE;
             logView.setVisibility(open ? View.VISIBLE : View.GONE);
-            logToggle.setText(open ? "▾ Detalhes" : "▸ Detalhes");
+            logToggle.setText((open ? "\u25be " : "\u25b8 ") + tr("Detalhes", "Details", "Detalles"));
         });
         return box;
     }
@@ -640,36 +678,38 @@ final class TripperPanel {
         switch (state) {
             case SCANNING:
                 chipColor = WARN;
-                chipText = "Procurando";
-                sub = "Procurando o Tripper (RE_DISP)...";
+                chipText = tr("Procurando", "Searching", "Buscando");
+                sub = tr("Procurando o Tripper (RE_DISP)...", "Looking for the Tripper (RE_DISP)...", "Buscando el Tripper (RE_DISP)...");
                 step = 1;
                 break;
             case CONNECTING:
                 chipColor = WARN;
-                chipText = "Conectando";
-                sub = "Conectando ao Tripper...";
+                chipText = tr("Conectando", "Connecting", "Conectando");
+                sub = tr("Conectando ao Tripper...", "Connecting to the Tripper...", "Conectando con el Tripper...");
                 step = 2;
                 break;
             case WAITING_PIN:
                 chipColor = WARN;
-                chipText = "Aguardando PIN";
-                sub = "Digite o PIN mostrado no Tripper.";
+                chipText = tr("Aguardando PIN", "Waiting for PIN", "Esperando PIN");
+                sub = tr("Digite o PIN mostrado no Tripper.", "Enter the PIN shown on the Tripper.", "Introduce el PIN que muestra el Tripper.");
                 step = 3;
                 break;
             case CONNECTED:
                 chipColor = OK;
-                chipText = "Conectado";
-                sub = "Pareamento salvo.";
+                chipText = tr("Conectado", "Connected", "Conectado");
+                sub = tr("Pareamento salvo.", "Pairing saved.", "Emparejamiento guardado.");
                 break;
             case DISCONNECTED:
             default:
                 chipColor = DANGER;
-                chipText = "Desconectado";
-                sub = saved ? "Pareado. Toque em Reconectar." : "Nenhum Tripper pareado.";
+                chipText = tr("Desconectado", "Disconnected", "Desconectado");
+                sub = saved
+                        ? tr("Pareado. Toque em Reconectar.", "Paired. Tap Reconnect.", "Emparejado. Toca Reconectar.")
+                        : tr("Nenhum Tripper pareado.", "No Tripper paired.", "Ning\u00fan Tripper emparejado.");
                 break;
         }
 
-        headerIcon.setBackground(TripperOverlay.circleBackground(TripperOverlay.stateColor(state)));
+        headerStateIcon.setStateColor(TripperOverlay.stateColor(state));
         chip.setText("● " + chipText);
         chip.setTextColor(chipColor);
         chip.setBackground(rounded((chipColor & 0x00FFFFFF) | 0x33000000, 100));
@@ -679,22 +719,24 @@ final class TripperPanel {
         for (int i = 0; i < PAIRING_STEPS; i++) {
             stepBars[i].setBackground(rounded(i < step ? ACCENT : TRACK, 2));
         }
-        stepLabel.setText(step > 0 ? "Passo " + step + " de " + PAIRING_STEPS + " · " + chipText : "");
+        stepLabel.setText(step > 0
+                ? tr("Passo ", "Step ", "Paso ") + step + tr(" de ", " of ", " de ") + PAIRING_STEPS + " \u00b7 " + chipText
+                : "");
         pinRow.setVisibility(state == TripperBridge.State.WAITING_PIN ? View.VISIBLE : View.GONE);
 
         switch (state) {
             case DISCONNECTED:
-                primary.setText(saved ? "Reconectar" : "Conectar");
+                primary.setText(saved ? tr("Reconectar", "Reconnect", "Reconectar") : tr("Conectar", "Connect", "Conectar"));
                 styleButton(primary, true);
                 primary.setOnClickListener(v -> bridge.userConnect());
                 break;
             case CONNECTED:
-                primary.setText("Desconectar");
+                primary.setText(tr("Desconectar", "Disconnect", "Desconectar"));
                 styleButton(primary, false);
                 primary.setOnClickListener(v -> bridge.userDisconnect());
                 break;
             default:
-                primary.setText("Cancelar");
+                primary.setText(tr("Cancelar", "Cancel", "Cancelar"));
                 styleButton(primary, false);
                 primary.setOnClickListener(v -> bridge.userDisconnect());
                 break;
@@ -707,7 +749,9 @@ final class TripperPanel {
 
     private void renderSyncHint() {
         boolean connected = bridge.getState() == TripperBridge.State.CONNECTED;
-        syncSub.setText(connected ? "Envia a hora do celular ao Tripper" : "Disponível quando conectado");
+        syncSub.setText(connected
+                ? tr("Envia a hora do celular ao Tripper", "Sends the phone's time to the Tripper", "Env\u00eda la hora del tel\u00e9fono al Tripper")
+                : tr("Dispon\u00edvel quando conectado", "Available when connected", "Disponible cuando est\u00e1 conectado"));
         syncButton.setEnabled(connected);
         syncButton.setAlpha(connected ? 1f : 0.4f);
     }
