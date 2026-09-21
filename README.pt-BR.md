@@ -1,5 +1,7 @@
 # WazeTripper
 
+<p align="center"><img src="docs/logo.png" width="200" alt="WazeTripper"></p>
+
 [English](README.md) · **Português (Brasil)**
 
 Modifica o app Waze para Android para que ele controle um **Tripper Pod da Royal Enfield** (o display de navegação da
@@ -11,7 +13,7 @@ Meteor 350) por Bluetooth Low Energy, sem app intermediário e sem ler notifica�
 > até onde deu para ver, protocolo próprio). **Este projeto é somente para o Tripper Pod.** O Dash não é suportado e
 > nunca foi testado. Daqui em diante, "Tripper" sempre significa o Tripper Pod.
 
-![A próxima curva do Waze espelhada em um Tripper da Royal Enfield: uma conversão à esquerda mostrada no display da moto, ao lado da mesma indicação no celular](docs/example-tripper.png)
+![WazeTripper: a navegação curva a curva do Waze no Tripper Pod, o botão flutuante do Tripper no Waze e o painel de configurações](docs/flyer-pt.png)
 
 ## Sumário
 
@@ -66,7 +68,7 @@ celulares e versões do Waze não foram testados.
 
 ### Recursos
 
-- Roda **dentro** do Waze modificado: um botão flutuante de moto abre o painel de conexão.
+- Roda **dentro** do Waze modificado: um botão flutuante do Tripper abre o painel de conexão. O símbolo de Wi-Fi dele fica vermelho desconectado, laranja ao conectar e verde conectado.
 - Pareamento com o PIN do Tripper e reconexão ao Tripper conhecido (automática ao abrir o Waze e após queda do link,
   por até 30 minutos; pode ser desligada).
 - Navegação: manobra atual, **próxima manobra** (seta pequena), distância, saída de rotatória e uma linha inferior à
@@ -117,7 +119,7 @@ adb install ./wazetripper.apk
 
 ## Uso
 
-1. Ligue a moto, abra o Waze modificado e toque no botão flutuante de moto.
+1. Ligue a moto, abra o Waze modificado e toque no botão flutuante do Tripper (o painel segue o idioma do Waze: português, espanhol, ou inglês para qualquer outro idioma).
 2. Na primeira vez: toque em **Conectar**, digite o PIN mostrado no Tripper e confirme. O pareamento fica salvo.
 3. Depois disso, o app procura o Tripper conhecido sozinho quando o Waze abre. Inicie uma rota no Waze e as manobras
    seguem para o Tripper.

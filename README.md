@@ -1,5 +1,7 @@
 # WazeTripper
 
+<p align="center"><img src="docs/logo.png" width="200" alt="WazeTripper"></p>
+
 **English** · [Português (Brasil)](README.pt-BR.md)
 
 Patch the Waze Android app to drive a **Royal Enfield Tripper Pod** (the navigation display of the Meteor 350) over
@@ -11,7 +13,7 @@ maneuver, distances, ETA and speed-camera alerts come straight from Waze's own n
 > hardware and, as far as we could tell, its own protocol). **This project is only for the Tripper Pod.** The Dash is
 > not supported and was never tested. From here on, "Tripper" always means the Tripper Pod.
 
-![Waze's next turn mirrored on a Royal Enfield Tripper: a left turn shown on the bike's display beside the same cue on the phone](docs/example-tripper.png)
+![WazeTripper: Waze turn-by-turn on the Tripper Pod, the floating Tripper button in Waze, and the settings panel](docs/flyer-en.png)
 
 ## Table of Contents
 
@@ -64,7 +66,7 @@ existing Tripper apps. Only one setup is confirmed so far (below); other bikes, 
 
 ### Features
 
-- Runs **inside** the patched Waze: a floating motorbike button opens a connection panel.
+- Runs **inside** the patched Waze: a floating Tripper button opens a connection panel. Its Wi-Fi symbol is red when disconnected, orange while connecting and green when connected.
 - Pairing with the Tripper's PIN, then reconnection to the known Tripper (automatic on Waze start and after a
   dropped link, for up to 30 minutes; can be turned off).
 - Navigation: current maneuver, **next maneuver** (small arrow), distance, roundabout exit, and a bottom line you
@@ -114,7 +116,7 @@ adb install ./wazetripper.apk
 
 ## Usage
 
-1. Turn the bike on, open the patched Waze, tap the floating motorbike button (the app's own UI is in Portuguese).
+1. Turn the bike on, open the patched Waze, tap the floating Tripper button (the panel follows Waze's language: Portuguese, Spanish, or English for any other language).
 2. First time: tap **Conectar**, type the PIN shown on the Tripper, confirm. The pairing is saved.
 3. After that, the app looks for the known Tripper by itself when Waze starts. Start a Waze route and the maneuvers
    flow to the Tripper.
