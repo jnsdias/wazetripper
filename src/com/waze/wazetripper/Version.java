@@ -9,5 +9,5 @@ final class Version {
     private Version() {
     }
 
-    static final String NAME = "0.5.0";
+    static final String NAME = "0.5.1";
 }

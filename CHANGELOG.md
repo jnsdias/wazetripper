@@ -4,6 +4,12 @@ Versioning follows [SemVer](https://semver.org) while in `0.x` (anything may cha
 version lives in `src/com/waze/wazetripper/Version.java` and is shown in the app's panel and in the
 header of exported trip logs.
 
+## 0.5.1 — 2026-09-20
+
+Added
+- A footer in the panel with the author and the project link (github.com/jnsdias/wazetripper), which opens in the
+  browser. It follows the panel's language.
+
 ## 0.5.0 — 2026-09-20
 
 Changed
